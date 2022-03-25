@@ -18,6 +18,7 @@ impl ConsoleRender {
     pub fn render(&self, ren: impl Render) {
         // Init buffer
         let mut buf = vec![vec![false; self.size.0]; self.size.1];
+        dbg!(buf.len(), buf[0].len());
 
         for line in ren.render() {
             // Render lines to buffer
@@ -40,7 +41,7 @@ impl ConsoleRender {
         }
 
         // Write to stdout
-        stdout().write(out.as_bytes()).unwrap();
+        stdout().write_all(out.as_bytes()).unwrap();
         stdout().flush().unwrap();
     }
 }

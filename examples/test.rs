@@ -5,7 +5,7 @@ use renderer::{
 };
 
 fn main() {
-    let ren = ConsoleRender::new(30, 30);
+    let ren = ConsoleRender::new(100, 100);
 
     // let l1 = Line {
     //     start: Pos { x: 10.0, y: 10.0 },
@@ -19,13 +19,23 @@ fn main() {
     //     step: 1.0,
     // };
 
-    let tri = Triangle {
-        point_a: Pos { x: 0.0, y: 0.0 },
-        point_b: Pos { x: 7.0, y: 29.0 },
-        point_c: Pos { x: 29.0, y: 29.0 },
-        step: 1.0,
-    };
-    ren.render(tri);
+    // let tri = Triangle {
+    //     point_a: Pos { x: 0.0, y: 0.0 },
+    //     point_b: Pos { x: 7.0, y: 29.0 },
+    //     point_c: Pos { x: 29.0, y: 29.0 },
+    //     step: 1.0,
+    // };
+    ren.render(
+        Group::new()
+            .add(renderer::shapes::text::Text::new(
+                "Jermey",
+                Pos { x: 5.0, y: 5.0 },
+            ))
+            .add(renderer::shapes::text::Text::new(
+                "Bad",
+                Pos { x: 5.0, y: 20.0 },
+            )),
+    );
 
     // let p1 = Point(Pos { x: 0.0, y: 0.0 });
 
