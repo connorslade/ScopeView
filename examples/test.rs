@@ -18,22 +18,23 @@ fn main() {
     //     end: Pos { x: 15.0, y: 2.0 },
     //     step: 1.0,
     // };
-    //
-    // let tri = Triangle {
-    //     point_a: Pos { x: 0.0, y: 0.0 },
-    //     point_b: Pos { x: 7.0, y: 29.0 },
-    //     point_c: Pos { x: 29.0, y: 29.0 },
-    //     step: 1.0,
-    // };
-    //
+
+    let tri = Triangle {
+        point_a: Pos { x: 0.0, y: 0.0 },
+        point_b: Pos { x: 7.0, y: 29.0 },
+        point_c: Pos { x: 29.0, y: 29.0 },
+        step: 1.0,
+    };
+    ren.render(tri);
+
     // let p1 = Point(Pos { x: 0.0, y: 0.0 });
-    //
+
     // ren.render(Group::new().add(l1).add(l2).add(tri).add(p1));
 
-    let smile = Group::new()
-        .add(Line::new(Pos::new(3.0, 3.0), Pos::new(3.0, 5.0)))
-        .add(Line::new(Pos::new(6.0, 3.0), Pos::new(6.0, 5.0)))
-        .add(Line::new(Pos::new(3.0, 7.0), Pos::new(6.0, 7.0)));
-
-    ren.render(smile);
+    // let smile = Group::new()
+    //     .add(Line::new(Pos::new(3.0, 3.0), Pos::new(3.0, 5.0)))
+    //     .add(Line::new(Pos::new(6.0, 3.0), Pos::new(6.0, 5.0)))
+    //     .add(Line::new(Pos::new(3.0, 7.0), Pos::new(6.0, 7.0)));
+    //
+    // ren.render(smile);
 }
