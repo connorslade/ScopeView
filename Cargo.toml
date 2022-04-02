@@ -5,3 +5,4 @@ edition = "2021"
 
 [dependencies]
 bitvec = "1.0.0"
+cpal = "0.13.5"

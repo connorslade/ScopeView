@@ -1,11 +1,12 @@
 use renderer::{
     render::{Line, Pos},
     shapes::{group::Group, point::Point, triangle::Triangle},
-    ConsoleRender,
+    ConsoleRender, ScopeRender,
 };
 
 fn main() {
-    let ren = ConsoleRender::new(100, 100);
+    let ren = ConsoleRender::new(10, 10);
+    let ren2 = ScopeRender::new(10, 10);
 
     // let l1 = Line {
     //     start: Pos { x: 10.0, y: 10.0 },
@@ -25,19 +26,21 @@ fn main() {
     //     point_c: Pos { x: 29.0, y: 29.0 },
     //     step: 1.0,
     // };
-    ren.render(
-        Group::new()
-            .add(renderer::shapes::text::Text::new(
-                "Jermey",
-                Pos { x: 5.0, y: 5.0 },
-            ))
-            .add(renderer::shapes::text::Text::new(
-                "Bad",
-                Pos { x: 5.0, y: 20.0 },
-            )),
-    );
+    // ren.render(
+    //     Group::new()
+    //         .add(renderer::shapes::text::Text::new(
+    //             "Hello",
+    //             Pos { x: 5.0, y: 5.0 },
+    //         ))
+    //         .add(renderer::shapes::text::Text::new(
+    //             "World",
+    //             Pos { x: 5.0, y: 20.0 },
+    //         )),
+    // );
 
-    // let p1 = Point(Pos { x: 0.0, y: 0.0 });
+    let p1 = Point(Pos { x: 5.0, y: 5.0 });
+    ren.render(p1);
+    ren2.render(p1);
 
     // ren.render(Group::new().add(l1).add(l2).add(tri).add(p1));
 

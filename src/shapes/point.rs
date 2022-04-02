@@ -1,5 +1,6 @@
 use crate::render::{Line, Pos, Render};
 
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub struct Point(pub Pos);
 
 impl Render for Point {

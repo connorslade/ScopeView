@@ -26,8 +26,7 @@ impl Render for Text {
         let mut x = self.start.x;
         let y = self.start.y;
         for i in self.text.iter() {
-            let mut draw_char = FONT[i.to_uppercase().next().unwrap() as usize]
-                .map(|x| x.view_bits::<Msb0>().to_owned());
+            let mut draw_char = FONT[*i as usize - 32].map(|x| x.view_bits::<Msb0>().to_owned());
             draw_char.reverse();
 
             for (yi, yv) in draw_char.iter().enumerate() {
@@ -52,6 +51,7 @@ impl Render for Text {
     }
 }
 
+// yes im a good programmer
 #[rustfmt::skip]
 const FONT: [[u8; 13]; 95] = [
     [0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00],
