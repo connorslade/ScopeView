@@ -5,6 +5,8 @@ use cpal::{Data, Sample, SampleFormat};
 
 use crate::render::{Line, Pos, Render};
 
+type Cooldown = (u32, u32, Option<Pos>, Option<Pos>);
+
 pub struct ScopeRender {
     size: (usize, usize),
 }
@@ -16,7 +18,13 @@ impl ScopeRender {
         }
     }
 
-    fn get_next_frame(&self, lines: &[Line], line_i: &mut usize, inc: &mut f32) -> Pos {
+    fn get_next_frame(
+        &self,
+        lines: &[Line],
+        line_i: &mut usize,
+        inc: &mut u32,
+        cooldown: &mut Cooldown,
+    ) -> Pos {
         let line = lines.get(*line_i).unwrap();
 
         let start = scale_pos(line.start, self.size);
@@ -24,23 +32,38 @@ impl ScopeRender {
 
         // length of the line
         let distance = line.distance();
-        let ratio = (line.step * (*inc)) / distance;
+        let ratio = (line.step * (*inc as f32)) / distance;
+
+        let p = Pos::new(
+            ratio * end.x + (1.0 - ratio) * start.x,
+            ratio * end.y + (1.0 - ratio) * start.y,
+        );
+
+        if (*cooldown).0 > 0 {
+            (*cooldown).0 -= 1;
+            return cooldown.2.unwrap();
+        }
+
+        if (*cooldown).1 > 0 {
+            (*cooldown).1 -= 1;
+            if let Some(i) = (*cooldown).3 {
+                return i;
+            }
+            (*cooldown).3 = Some(p);
+        }
 
         // check if we need to terminate
         if ratio > 1.0 {
             *line_i += 1;
-            *inc = 0.0;
+            *inc = 0;
             *line_i %= lines.len();
+            (*cooldown) = (50, 50, Some(p), None);
 
-            return self.get_next_frame(lines, line_i, inc);
+            return self.get_next_frame(lines, line_i, inc, cooldown);
         }
+        *inc += 1;
 
-        *inc += 1.0;
-
-        Pos::new(
-            ratio * end.x + (1.0 - ratio) * start.x,
-            ratio * end.y + (1.0 - ratio) * start.y,
-        )
+        p
     }
 
     pub fn render(self, ren: impl Render) {
@@ -64,7 +87,8 @@ impl ScopeRender {
         // RENDER
         let mut frame = Pos::new(0., 0.);
         let mut line = 0;
-        let mut x = 0.0;
+        let mut x = 0;
+        let mut line_cooldown = (0, 0, None, None);
         let stream = device
             .build_output_stream(
                 &supported_config.into(),
@@ -72,7 +96,13 @@ impl ScopeRender {
                     for (i, e) in data.iter_mut().enumerate() {
                         match i % channels {
                             0 => {
-                                frame = Self::get_next_frame(&self, &lines, &mut line, &mut x);
+                                frame = Self::get_next_frame(
+                                    &self,
+                                    &lines,
+                                    &mut line,
+                                    &mut x,
+                                    &mut line_cooldown,
+                                );
                                 *e = Sample::from(&frame.x);
                             }
                             1 => *e = Sample::from(&frame.y),

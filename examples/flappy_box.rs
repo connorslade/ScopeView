@@ -10,16 +10,21 @@ fn main() {
 
     let mut flap_box = Vec::new();
 
-    for i in 0..2 {
+    for i in 0..1 {
         flap_box.push(next_box());
     }
 
-    ren.render(bounding());
+    let mut frame = bounding();
+    for i in flap_box {
+        frame = frame.add(i);
+    }
+
+    ren.render(frame);
 }
 
 fn next_box() -> FlappyBox {
     let mut rng = rand::thread_rng();
-    FlappyBox::new(Pos::new(0.0, 0.0), Pos::new(2.0, 4.0))
+    FlappyBox::new(Pos::new(-5.0, -4.0), Pos::new(0.0, 0.0))
 }
 
 #[inline]
