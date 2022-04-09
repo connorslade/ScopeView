@@ -2,20 +2,18 @@ use std::f32::consts::PI;
 
 use crate::render::{Line, Pos, Render};
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Circle {
     radius: f32,
-    center: Pos,
     step: f32,
     lines: Vec<Line>,
 }
 impl Circle {
-    pub fn new(radius: f32, center: Pos) -> Circle {
+    pub fn new(radius: f32) -> Circle {
         Circle {
             radius,
-            center,
             step: 1.0,
-            lines: Default::default(),
+            lines: Vec::new(),
         }
     }
 
@@ -23,17 +21,23 @@ impl Circle {
         let steps = (2.0 * self.radius * PI / self.step) + 1.0;
         let angle = 2.0 * PI / steps;
 
-        let mut a: Pos = self.center;
-        let mut b: Pos = self.center;
+        let save = Pos::new(
+            (angle * 0 as f32).cos() * self.radius,
+            (angle * 0 as f32).sin() * self.radius,
+        );
+        let mut a = save;
+        let mut b;
+        self.lines.push(Line::new(Pos::new(0.0, 0.0), a));
 
-        for itr in 0..steps as i32 {
+        for itr in 1..=steps as i32 {
             b = Pos::new(
-                self.center.x + (angle * itr as f32).cos() * self.radius,
-                self.center.y + (angle * itr as f32).sin() * self.radius,
+                (angle * itr as f32).cos() * self.radius,
+                (angle * itr as f32).sin() * self.radius,
             );
-            self.lines.push(Line::new(a, b));
+            self.lines.push(Line::new(a, b).cool_down(false));
             a = b;
         }
+        self.lines.push(Line::new(a, save).cool_down(false));
     }
 }
 

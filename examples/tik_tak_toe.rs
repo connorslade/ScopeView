@@ -13,22 +13,35 @@ enum Tile {
 
 fn main() {
     let ren = ScopeRender::new(10, 10);
-    // let mut circle: Circle = Circle::new(5.0, Pos::new(0.0, 0.0));
+    //
     // circle.generate();
     // ren.render(circle);
 
-    let mut board = vec![vec![Tile::Ex; 3]; 3];
-    ren.render(Group::new().add(bounding()).add(peices(board)));
+    let mut circle = Circle::new(1.0);
+    circle.generate();
+    dbg!(&circle);
+
+    // let mut board = vec![
+    //     vec![Tile::None; 3],
+    //     vec![Tile::None, Tile::None, Tile::Oh],
+    //     vec![Tile::None; 3],
+    // ];
+    let mut board = vec![
+        vec![Tile::Ex; 3],
+        vec![Tile::Ex, Tile::Ex, Tile::Oh],
+        vec![Tile::Oh; 3],
+    ];
+    ren.render(Group::new().add(bounding()).add(peices(board, &circle)));
 }
 
-fn peices(peices: Vec<Vec<Tile>>) -> Group {
+fn peices(peices: Vec<Vec<Tile>>, circle: &Circle) -> Group {
     let mut g = Group::new();
 
     //let index: [u8; 9] = [6, 7, 8, 5, 4, 3, 0, 1, 2];
 
     for (xi, x) in peices.iter().enumerate() {
         for (yi, y) in x.iter().enumerate() {
-            g = g.add(tile_draw(*y, xi as i8, yi as i8));
+            g = g.add(tile_draw(*y, xi as i8, yi as i8, &circle));
         }
     }
 
@@ -44,7 +57,7 @@ fn gridcoord_c(x: i8, y: i8) -> Pos {
 }
 
 #[inline]
-fn tile_draw(tile: Tile, x: i8, y: i8) -> Group {
+fn tile_draw(tile: Tile, x: i8, y: i8, circle: &Circle) -> Group {
     let c = gridcoord_c(x, y);
 
     match tile {
@@ -58,23 +71,23 @@ fn tile_draw(tile: Tile, x: i8, y: i8) -> Group {
                 Pos::new(c.x - 0.5, c.y + 0.5),
                 Pos::new(c.x + 0.5, c.y - 0.5),
             )),
-        Tile::Oh => Group::new()
-            .add(Line::new(
-                Pos::new(c.x - 0.5, c.y - 0.5),
-                Pos::new(c.x - 0.5, c.y + 0.5),
-            ))
-            .add(Line::new(
-                Pos::new(c.x - 0.5, c.y + 0.5),
-                Pos::new(c.x + 0.5, c.y + 0.5),
-            ))
-            .add(Line::new(
-                Pos::new(c.x + 0.5, c.y + 0.5),
-                Pos::new(c.x + 0.5, c.y - 0.5),
-            ))
-            .add(Line::new(
-                Pos::new(c.x + 0.5, c.y - 0.5),
-                Pos::new(c.x - 0.5, c.y - 0.5),
-            )),
+        Tile::Oh => Group::new().add(circle.to_owned()).offset(Pos::new(c.x, c.y))
+            // .add(Line::new(
+            //     Pos::new(c.x - 0.5, c.y - 0.5),
+            //     Pos::new(c.x - 0.5, c.y + 0.5),
+            // ))
+            // .add(Line::new(
+            //     Pos::new(c.x - 0.5, c.y + 0.5),
+            //     Pos::new(c.x + 0.5, c.y + 0.5),
+            // ))
+            // .add(Line::new(
+            //     Pos::new(c.x + 0.5, c.y + 0.5),
+            //     Pos::new(c.x + 0.5, c.y - 0.5),
+            // ))
+            // .add(Line::new(
+            //     Pos::new(c.x + 0.5, c.y - 0.5),
+            //     Pos::new(c.x - 0.5, c.y - 0.5),
+            // )),
     }
 }
 
