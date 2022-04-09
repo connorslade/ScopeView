@@ -16,25 +16,31 @@ impl ScopeRender {
         }
     }
 
-    fn get_next_frame(&self, lines: &[Line], line_i: &mut usize, x: &mut f32) -> Pos {
-        // TODO: Calc sloap beforehand
-        let mut line = lines.get(*line_i).unwrap();
+    fn get_next_frame(&self, lines: &[Line], line_i: &mut usize, inc: &mut f32) -> Pos {
+        let line = lines.get(*line_i).unwrap();
 
-        if *x > line.end.x {
-            *x = 0.0;
+        let start = scale_pos(line.start, self.size);
+        let end = scale_pos(line.end, self.size);
+
+        // length of the line
+        let distance = line.distance();
+        let ratio = (line.step * (*inc)) / distance;
+
+        // check if we need to terminate
+        if ratio > 1.0 {
             *line_i += 1;
+            *inc = 0.0;
+            *line_i %= lines.len();
 
-            if *line_i > lines.len() - 1 {
-                *line_i = 0;
-            }
-            line = lines.get(0).unwrap();
+            return self.get_next_frame(lines, line_i, inc);
         }
 
-        let sloap = (line.end.y - line.start.y) / (line.end.x - line.start.x);
-        let y = sloap * x.to_owned() as f32;
+        *inc += 1.0;
 
-        *x += line.step / 100.0;
-        scale_pos(Pos::new(x.to_owned() as f32, y), self.size)
+        Pos::new(
+   ratio * line.end.x + (1.0 - ratio) * line.start.x,
+   ratio * line.end.y + (1.0 - ratio) * line.start.y,
+)
     }
 
     pub fn render(self, ren: impl Render) {
@@ -49,12 +55,11 @@ impl ScopeRender {
             .supported_output_configs()
             .expect("error while querying configs");
         let supported_config = supported_configs_range
-            .next()
+            .nth(1)
             .expect("no supported config?!")
-            .with_max_sample_rate();
-        if supported_config.channels() != 2 {
-            panic!("Too many chanels! [{}]", supported_config.channels());
-        }
+            .with_sample_rate(cpal::SampleRate(44100));
+        let channels = supported_config.channels() as usize;
+        dbg!(channels);
 
         // RENDER
         let mut frame = Pos::new(0., 0.);
@@ -65,12 +70,14 @@ impl ScopeRender {
                 &supported_config.into(),
                 move |data: &mut [f32], _: &cpal::OutputCallbackInfo| {
                     for (i, e) in data.iter_mut().enumerate() {
-                        if i % 2 == 0 {
-                            frame = Self::get_next_frame(&self, &lines, &mut line, &mut x);
-                            *e = Sample::from(&frame.x);
-                            continue;
+                        match i % channels {
+                            0 => {
+                                frame = Self::get_next_frame(&self, &lines, &mut line, &mut x);
+                                *e = Sample::from(&frame.x);
+                            }
+                            1 => *e = Sample::from(&frame.y),
+                            _ => {}
                         }
-                        *e = Sample::from(&frame.y);
                     }
                 },
                 move |err| {
@@ -83,7 +90,7 @@ impl ScopeRender {
         stream.play().unwrap();
 
         // wait,,,
-        std::thread::sleep(std::time::Duration::from_millis(10000));
+        std::thread::park();
     }
 }
 

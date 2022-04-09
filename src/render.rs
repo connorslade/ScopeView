@@ -32,12 +32,16 @@ impl Line {
         Self {
             start,
             end,
-            step: 1.0,
+            step: 0.2,
         }
     }
 
     pub fn step(self, step: f32) -> Self {
         Self { step, ..self }
+    }
+
+    pub fn distance(&self) -> f32 {
+        ((self.end.x - self.start.x).powf(2.0) + (self.end.y - self.start.y).powf(2.0)).sqrt()
     }
 }
 
