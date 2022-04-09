@@ -38,9 +38,9 @@ impl ScopeRender {
         *inc += 1.0;
 
         Pos::new(
-   ratio * line.end.x + (1.0 - ratio) * line.start.x,
-   ratio * line.end.y + (1.0 - ratio) * line.start.y,
-)
+            ratio * end.x + (1.0 - ratio) * start.x,
+            ratio * end.y + (1.0 - ratio) * start.y,
+        )
     }
 
     pub fn render(self, ren: impl Render) {
