@@ -6,7 +6,6 @@ use renderer::{
 
 fn main() {
     let ren = ConsoleRender::new(10, 10);
-    let ren2 = ScopeRender::new(10, 10);
 
     // let l1 = Line {
     //     start: Pos { x: 10.0, y: 10.0 },
@@ -38,9 +37,15 @@ fn main() {
     //         )),
     // );
 
-    let p1 = Point(Pos { x: 5.0, y: 5.0 });
-    ren.render(p1);
-    ren2.render(p1);
+    // let p1 = Point(Pos { x: -10.0, y: 0.0 });
+    // ren.render(p1);
+    // for i in 18..40 {
+    //     let step = i as f32 / 800.0;
+    //     dbg!(i, &step);
+
+        let ren2 = ScopeRender::new(10, 10);
+        ren2.render(Line::new(Pos::new(1.0, 0.0), Pos::new(3.0, 5.0)).step(0.02375));
+    // }
 
     // ren.render(Group::new().add(l1).add(l2).add(tri).add(p1));
 
