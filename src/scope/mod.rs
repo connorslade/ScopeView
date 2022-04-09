@@ -1,4 +1,4 @@
-use std::ops::Add;
+use std::sync::mpsc::Receiver;
 
 use cpal::traits::{DeviceTrait, HostTrait, StreamTrait};
 use cpal::{Data, Sample, SampleFormat};
@@ -9,12 +9,14 @@ type Cooldown = (u32, u32, Option<Pos>, Option<Pos>);
 
 pub struct ScopeRender {
     size: (usize, usize),
+    rx: Receiver<Vec<Line>>,
 }
 
 impl ScopeRender {
-    pub fn new(x_size: usize, y_size: usize) -> Self {
+    pub fn new(x_size: usize, y_size: usize, rx: Receiver<Vec<Line>>) -> Self {
         Self {
             size: (x_size, y_size),
+            rx,
         }
     }
 
@@ -71,9 +73,7 @@ impl ScopeRender {
         p
     }
 
-    pub fn render(self, ren: impl Render) {
-        let lines = ren.render();
-
+    pub fn render(self) {
         // Init audio output
         let host = cpal::default_host();
         let device = host
@@ -90,6 +90,7 @@ impl ScopeRender {
         dbg!(channels);
 
         // RENDER
+        let mut lines = self.rx.recv().unwrap();
         let mut frame = Pos::new(0., 0.);
         let mut line = 0;
         let mut x = 0;
@@ -99,6 +100,10 @@ impl ScopeRender {
                 &supported_config.into(),
                 move |data: &mut [f32], _: &cpal::OutputCallbackInfo| {
                     for (i, e) in data.iter_mut().enumerate() {
+                        if let Ok(i) = self.rx.try_recv() {
+                            lines = i;
+                        }
+
                         match i % channels {
                             0 => {
                                 frame = Self::get_next_frame(
