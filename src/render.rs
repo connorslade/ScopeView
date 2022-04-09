@@ -9,6 +9,7 @@ pub struct Line {
     pub start: Pos,
     pub end: Pos,
     pub step: f32,
+    pub cool_down: bool,
 }
 
 impl Render for Line {
@@ -32,12 +33,17 @@ impl Line {
         Self {
             start,
             end,
-            step: 0.2,
+            step: 0.5,
+            cool_down: true,
         }
     }
 
     pub fn step(self, step: f32) -> Self {
         Self { step, ..self }
+    }
+
+    pub fn cool_down(self, cool_down: bool) -> Self {
+        Self { cool_down, ..self }
     }
 
     pub fn distance(&self) -> f32 {

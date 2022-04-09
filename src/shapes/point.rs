@@ -9,6 +9,7 @@ impl Render for Point {
             start: self.0,
             end: self.0,
             step: 1.0,
+            cool_down: true,
         }]
     }
 }

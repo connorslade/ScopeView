@@ -1,7 +1,7 @@
 use rand::Rng;
 use renderer::{
     render::{Line, Pos, Render},
-    shapes::{group::Group, point::Point, triangle::Triangle},
+    shapes::{group::Group, point::Point},
     ScopeRender,
 };
 

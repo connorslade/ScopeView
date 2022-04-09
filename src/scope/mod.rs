@@ -30,26 +30,31 @@ impl ScopeRender {
         let start = scale_pos(line.start, self.size);
         let end = scale_pos(line.end, self.size);
 
-        // length of the line
+        // Get the length of the line
         let distance = line.distance();
         let ratio = (line.step * (*inc as f32)) / distance;
 
+        // Calc beam pos
         let p = Pos::new(
             ratio * end.x + (1.0 - ratio) * start.x,
             ratio * end.y + (1.0 - ratio) * start.y,
         );
 
-        if (*cooldown).0 > 0 {
-            (*cooldown).0 -= 1;
-            return cooldown.2.unwrap();
-        }
-
-        if (*cooldown).1 > 0 {
-            (*cooldown).1 -= 1;
-            if let Some(i) = (*cooldown).3 {
-                return i;
+        if line.cool_down {
+            // End cooldown
+            if (*cooldown).0 > 0 {
+                (*cooldown).0 -= 1;
+                return cooldown.2.unwrap();
             }
-            (*cooldown).3 = Some(p);
+
+            // Start cooldown
+            if (*cooldown).1 > 0 {
+                (*cooldown).1 -= 1;
+                if let Some(i) = (*cooldown).3 {
+                    return i;
+                }
+                (*cooldown).3 = Some(p);
+            }
         }
 
         // check if we need to terminate
@@ -57,7 +62,7 @@ impl ScopeRender {
             *line_i += 1;
             *inc = 0;
             *line_i %= lines.len();
-            (*cooldown) = (50, 50, Some(p), None);
+            (*cooldown) = (20, 35, Some(p), None);
 
             return self.get_next_frame(lines, line_i, inc, cooldown);
         }

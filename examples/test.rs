@@ -1,6 +1,6 @@
 use renderer::{
     render::{Line, Pos},
-    shapes::{group::Group, point::Point, text::Text, triangle::Triangle},
+    shapes::{group::Group, point::Point, text::Text},
     ConsoleRender, ScopeRender,
 };
 
