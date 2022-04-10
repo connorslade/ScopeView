@@ -94,6 +94,11 @@ fn main() {
                 };
 
                 if e {
+                    if board.iter().all(|x| x.iter().all(|y| *y != Tile::None)) {
+                        println!("Tie -_-");
+                        lose_line = Some(Group::new());
+                    }
+
                     flag = true;
                     let ret = detect_win(&board);
                     if ret.1 != Tile::None {
@@ -175,13 +180,13 @@ fn do_win(win: WinType, ti: Tile) -> Group {
     match win {
         WinType::None => Group::new(),
         WinType::Horizontal(n) => {
-            Group::new().add(Line::new(gridcoord_c(n as i8, 0), gridcoord_c(n as i8, 2)))
+            Group::new().add(Line::new(gridcoord_c(n as i8, -1), gridcoord_c(n as i8, 3)))
         }
         WinType::Vertical(n) => {
-            Group::new().add(Line::new(gridcoord_c(0, n as i8), gridcoord_c(2, n as i8)))
+            Group::new().add(Line::new(gridcoord_c(-1, n as i8), gridcoord_c(3, n as i8)))
         }
-        WinType::Diagonal(0) => Group::new().add(Line::new(gridcoord_c(0, 0), gridcoord_c(2, 2))),
-        WinType::Diagonal(1) => Group::new().add(Line::new(gridcoord_c(0, 2), gridcoord_c(0, 2))),
+        WinType::Diagonal(0) => Group::new().add(Line::new(gridcoord_c(-1, -1), gridcoord_c(3, 3))),
+        WinType::Diagonal(1) => Group::new().add(Line::new(gridcoord_c(-1, 3), gridcoord_c(3, -1))),
         _ => unimplemented!(),
     }
 }
