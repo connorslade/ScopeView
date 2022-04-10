@@ -27,13 +27,17 @@ impl ScopeRender {
         inc: &mut u32,
         cooldown: &mut Cooldown,
     ) -> Pos {
-        if lines.len() == 0 {
+        if lines.is_empty() {
             return Pos::new(0.0, 0.0);
         }
 
         let line = match lines.get(*line_i) {
             Some(i) => i,
-            None => return Pos::new(0.0, 0.0),
+            None => {
+                *line_i = 0;
+                *inc = 0;
+                return self.get_next_frame(lines, line_i, inc, cooldown);
+            }
         };
 
         let start = scale_pos(line.start, self.size);

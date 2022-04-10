@@ -36,7 +36,7 @@ fn main() {
     let mspf = (10.0_f32.recip() * 1000.0) as u64;
     let mut board = vec![vec![Tile::None; 3]; 3];
     let mut player = Tile::Ex;
-    let mut lose_line: Option<Group> = None;
+    let mut lose_line = None;
     let mut flag: bool = true;
 
     let (tx, rx) = mpsc::sync_channel(10);
