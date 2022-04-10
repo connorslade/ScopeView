@@ -27,7 +27,14 @@ impl ScopeRender {
         inc: &mut u32,
         cooldown: &mut Cooldown,
     ) -> Pos {
-        let line = lines.get(*line_i).unwrap();
+        if lines.len() == 0 {
+            return Pos::new(0.0, 0.0);
+        }
+
+        let line = match lines.get(*line_i) {
+            Some(i) => i,
+            None => return Pos::new(0.0, 0.0),
+        };
 
         let start = scale_pos(line.start, self.size);
         let end = scale_pos(line.end, self.size);
@@ -87,7 +94,6 @@ impl ScopeRender {
             .expect("no supported config?!")
             .with_sample_rate(cpal::SampleRate(44100));
         let channels = supported_config.channels() as usize;
-        dbg!(channels);
 
         // RENDER
         let mut lines = self.rx.recv().unwrap();

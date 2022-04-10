@@ -1,9 +1,12 @@
+use std::fmt;
+use std::sync::mpsc;
+
+use getch::Getch;
 use renderer::{
     render::{Line, Pos, Render},
     shapes::{circle::Circle, group::Group, point::Point, text::Text},
     ConsoleRender, ScopeRender,
 };
-use std::sync::mpsc;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 enum Tile {
@@ -12,11 +15,38 @@ enum Tile {
     Oh,
 }
 
+impl fmt::Display for Tile {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> Result<(), fmt::Error> {
+        write!(
+            f,
+            "{}",
+            match self {
+                Tile::None => "None",
+                Tile::Ex => "X",
+                Tile::Oh => "O",
+            }
+        );
+
+        Ok(())
+    }
+}
+
 fn main() {
+    print!("\x1B[2J");
     let mspf = (10.0_f32.recip() * 1000.0) as u64;
     let mut board = vec![vec![Tile::None; 3]; 3];
-    // let mut board = vec![vec![Tile::Ex, Tile:Ex, Tile:Oh]; 3];
+    let mut player = Tile::Ex;
+    let mut lose_line: Option<Group> = None;
+    let mut flag: bool = true;
+
     let (tx, rx) = mpsc::sync_channel(10);
+    let (tx_chr, rx_chr) = mpsc::sync_channel(50);
+
+    // Keyboard Interface Thread :|||
+    std::thread::spawn(move || loop {
+        let chr = Getch::new().getch().unwrap();
+        tx_chr.send(chr).unwrap();
+    });
 
     // Pregen circle for um well
     // im not really sure why brendon did this but its here so :\
@@ -28,12 +58,89 @@ fn main() {
 
     loop {
         let start = std::time::Instant::now();
-        let render = Group::new().add(bounding()).add(peices(&board, &circle));
+        if flag && lose_line.is_none() {
+            println!("GO {}", player);
+            flag = false;
+        }
+
+        if let Ok(i) = rx_chr.try_recv() {
+            if let Some(i) = char::from_u32(i as u32) {
+                let l = lose_line.is_none();
+                let e = match i {
+                    'q' => safe_set_player(&mut board, &mut player, l, (2, 0)),
+                    'w' => safe_set_player(&mut board, &mut player, l, (2, 1)),
+                    'e' => safe_set_player(&mut board, &mut player, l, (2, 2)),
+                    'a' => safe_set_player(&mut board, &mut player, l, (1, 0)),
+                    's' => safe_set_player(&mut board, &mut player, l, (1, 1)),
+                    'd' => safe_set_player(&mut board, &mut player, l, (1, 2)),
+                    'z' => safe_set_player(&mut board, &mut player, l, (0, 0)),
+                    'x' => safe_set_player(&mut board, &mut player, l, (0, 1)),
+                    'c' => safe_set_player(&mut board, &mut player, l, (0, 2)),
+                    ' ' => {
+                        if lose_line.is_some() {
+                            lose_line = None;
+                            board = vec![vec![Tile::None; 3]; 3];
+                            player = Tile::Ex;
+                            lose_line = None;
+                            flag = true;
+                            print!("\x1B[2J");
+                        }
+                        false
+                    }
+                    _ => {
+                        println!("Invalid Char: `{}`", i);
+                        false
+                    }
+                };
+
+                if e {
+                    flag = true;
+                    let ret = detect_win(&board);
+                    if ret.1 != Tile::None {
+                        println!("{} Wins", ret.1);
+                        lose_line = Some(do_win(ret.0, ret.1));
+                    }
+                }
+            }
+        }
+
+        let mut render = Group::new().add(bounding()).add(peices(&board, &circle));
+        if let Some(i) = &lose_line {
+            render = render.add(i.render());
+        }
+
         tx.send(render.render()).unwrap();
         let end_ms = start.elapsed().as_millis();
 
         std::thread::sleep(std::time::Duration::from_millis(mspf - end_ms as u64));
     }
+}
+
+fn safe_set_player(
+    board: &mut Vec<Vec<Tile>>,
+    player: &mut Tile,
+    run: bool,
+    pos: (u8, u8),
+) -> bool {
+    if !run {
+        return false;
+    }
+
+    let prev = (*board)[pos.0 as usize][pos.1 as usize];
+
+    if prev != Tile::None {
+        println!("Spot Taken!");
+        return false;
+    }
+
+    (*board)[pos.0 as usize][pos.1 as usize] = *player;
+    *player = match *player {
+        Tile::Ex => Tile::Oh,
+        Tile::Oh => Tile::Ex,
+        Tile::None => unreachable!(),
+    };
+
+    true
 }
 
 fn peices(peices: &[Vec<Tile>], circle: &Circle) -> Group {
@@ -64,36 +171,42 @@ enum WinType {
 }
 
 // stuff with wins? idpokjihgv
-fn do_win(win: WinType) {
+fn do_win(win: WinType, ti: Tile) -> Group {
     match win {
-        WinType::None => {}
-        WinType::Horizontal(_) => {}
-        WinType::Vertical(_) => {}
-        WinType::Diagonal(_) => {}
+        WinType::None => Group::new(),
+        WinType::Horizontal(n) => {
+            Group::new().add(Line::new(gridcoord_c(n as i8, 0), gridcoord_c(n as i8, 2)))
+        }
+        WinType::Vertical(n) => {
+            Group::new().add(Line::new(gridcoord_c(0, n as i8), gridcoord_c(2, n as i8)))
+        }
+        WinType::Diagonal(0) => Group::new().add(Line::new(gridcoord_c(0, 0), gridcoord_c(2, 2))),
+        WinType::Diagonal(1) => Group::new().add(Line::new(gridcoord_c(0, 2), gridcoord_c(0, 2))),
+        _ => unimplemented!(),
     }
 }
 
 fn detect_win(board: &[Vec<Tile>]) -> (WinType, Tile) {
     // check horizontals
     for n in 0..3 {
-        if board[n][0] == board[n][1] && board[n][1] == board[n][2] {
+        if board[n][0] == board[n][1] && board[n][1] == board[n][2] && board[n][0] != Tile::None {
             return (WinType::Horizontal(n as u8), board[n][0]);
         }
     }
 
     // check verticals
     for n in 0..3 {
-        if board[0][n] == board[1][n] && board[1][n] == board[2][n] {
+        if board[0][n] == board[1][n] && board[1][n] == board[2][n] && board[0][n] != Tile::None {
             return (WinType::Vertical(n as u8), board[0][n]);
         }
     }
 
     // check diagonals
-    if board[0][0] == board[1][1] && board[1][1] == board[2][2] {
+    if board[0][0] == board[1][1] && board[1][1] == board[2][2] && board[1][1] != Tile::None {
         return (WinType::Diagonal(0), board[1][1]);
     }
 
-    if board[0][2] == board[1][1] && board[1][1] == board[2][0] {
+    if board[0][2] == board[1][1] && board[1][1] == board[2][0] && board[1][1] != Tile::None {
         return (WinType::Diagonal(1), board[1][1]);
     }
 

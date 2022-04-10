@@ -6,6 +6,4 @@ edition = "2021"
 [dependencies]
 bitvec = "1.0.0"
 cpal = "0.13.5"
-rand = "0.8.5"
-
-anyhow = "1.0.56"
+getch = "0.3.1"
