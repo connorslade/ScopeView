@@ -7,7 +7,6 @@ pub struct Circle {
     radius: f32,
     step: f32,
     lines: Vec<Line>,
-    per: f32,
 }
 impl Circle {
     pub fn new(radius: f32) -> Circle {
@@ -15,21 +14,8 @@ impl Circle {
             radius,
             step: 1.0,
             lines: Vec::new(),
-            per: 1.0,
         }
     }
-
-    // pub fn loading() {
-    //     let circle: Circle = Circle {
-    //         radius: 10,
-    //         lines: Vec::new(),
-    //         step: 0.001,
-    //         per: 0.0,
-    //     };
-    //
-    //     circle::generate();
-    //
-    // }
 
     pub fn generate(&mut self) {
         let steps = (2.0 * self.radius * PI / self.step) + 1.0;

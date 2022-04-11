@@ -4,8 +4,8 @@ use std::sync::mpsc;
 use getch::Getch;
 use renderer::{
     render::{Line, Pos, Render},
-    shapes::{circle::Circle, group::Group, point::Point, text::Text},
-    ConsoleRender, ScopeRender,
+    shapes::{circle::Circle, group::Group},
+    ScopeRender,
 };
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -25,7 +25,8 @@ impl fmt::Display for Tile {
                 Tile::Ex => "X",
                 Tile::Oh => "O",
             }
-        );
+        )
+        .unwrap();
 
         Ok(())
     }
@@ -81,7 +82,6 @@ fn main() {
                             lose_line = None;
                             board = vec![vec![Tile::None; 3]; 3];
                             player = Tile::Ex;
-                            lose_line = None;
                             flag = true;
                             print!("\x1B[2J");
                         }
@@ -176,7 +176,7 @@ enum WinType {
 }
 
 // stuff with wins? idpokjihgv
-fn do_win(win: WinType, ti: Tile) -> Group {
+fn do_win(win: WinType, _ti: Tile) -> Group {
     match win {
         WinType::None => Group::new(),
         WinType::Horizontal(n) => {

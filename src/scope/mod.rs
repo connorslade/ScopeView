@@ -1,9 +1,9 @@
 use std::sync::mpsc::Receiver;
 
 use cpal::traits::{DeviceTrait, HostTrait, StreamTrait};
-use cpal::{Data, Sample, SampleFormat};
+use cpal::Sample;
 
-use crate::render::{Line, Pos, Render};
+use crate::render::{Line, Pos};
 
 type Cooldown = (u32, u32, Option<Pos>, Option<Pos>);
 
